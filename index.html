@@ -2,32 +2,68 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Viewport ottimizzato: user-scalable=no previene zoom accidentali, ma va usato con cautela per accessibilità. 
+         Qui usiamo lo standard sicuro che permette lo zoom manuale ma imposta la scala corretta. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    
+    <!-- Meta tag specifici per iOS / Apple Web App -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=no">
+
     <title>Siete invitati | Elena & Ugo</title>
     
-<script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Stile di base e font (Verde Oliva Classico, ispirato al tuo design) */
+        /* Stile di base e font */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
         
         :root {
-            /* TEMA: Ispirato al Verde Oliva Classico */
-            --color-primary: #5D7050;      /* Verde Oliva/Salvia Scuro */
-            --color-secondary: #C4D2B2;    /* Verde Acqua/Menta molto chiaro */
-            --color-accent: #E8B446;       /* Oro Giallo Antico (Per dettagli) */
-            --color-background: #FAF8F2;   /* Bianco Panna Caldo / Off-White */
+            --color-primary: #5D7050;      
+            --color-secondary: #C4D2B2;    
+            --color-accent: #E8B446;       
+            --color-background: #FAF8F2;   
             
             --font-serif: 'Playfair Display', serif;
             --font-sans: 'Inter', sans-serif;
         }
 
+        /* --- OTTIMIZZAZIONI APPLE / IOS --- */
         body {
             font-family: var(--font-sans);
             background-color: var(--color-background);
-            /* Testo scuro per maggiore leggibilità */
-            color: #222; 
+            color: #222;
+            
+            /* Rendering testo nitido su schermi Retina (Apple) */
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            
+            /* Gestione Notch (iPhone X e successivi) */
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+        }
+
+        /* Rimuove l'highlight grigio al tocco su iOS */
+        a, button, input, select, textarea {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Reset stili nativi iOS per input e bottoni */
+        input, textarea, select, button {
+            -webkit-appearance: none;
+            appearance: none;
+            border-radius: 0.375rem; /* Forza il border-radius di Tailwind */
+        }
+
+        /* FIX CRITICO IOS: Previene lo zoom automatico sui campi di input */
+        @media screen and (max-width: 768px) {
+            input, textarea, select {
+                font-size: 16px !important; 
+            }
         }
 
         .header-font {
@@ -36,65 +72,70 @@
 
         /* 1. Contenitore principale dell'Header */
         .wedding-bg {
-            position: relative; /* Necessario per posizionare il pseudo-elemento */
+            position: relative;
             min-height: 100vh;
-            /* Rende il contenuto (glass-box) visibile sopra il blur */
             z-index: 1; 
+            overflow: hidden; /* Mantiene pulito il layout */
         }
         
-        /* 2. Pseudo-elemento per l'immagine di sfondo sfocata */
+        /* 2. Sfondo Parallax Ottimizzato per iOS (Position Fixed invece di Background-Attachment Fixed) */
         .wedding-bg::before {
             content: '';
-            position: absolute;
+            position: fixed; /* FIX: Usa fixed positioning per fluidità su iOS */
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
-            /* Immagine di sfondo */
+            width: 100%;
+            height: 100vh; /* Copre intero viewport */
+            
             background: url('https://images.unsplash.com/photo-1561287495-a3fe1fd28504?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHx3ZWRkaW5nJTIwY291cGxlfGVufDB8fHx8MTc2MzIzODI3MHww&ixlib=rb-4.1.0&q=80&q=75&w=1080') center/cover no-repeat;
-            background-attachment: fixed;
-            /* APPLICA LA LEGGERA SFOCATURA (3px) ALL'IMMAGINE */
+            
+            /* Rimuoviamo background-attachment: fixed che causa jitter su iOS */
+            background-attachment: scroll; 
+            
             filter: blur(3px); 
-            /* Metti il filtro sotto il contenuto */
             z-index: -1; 
+            will-change: transform; /* Hint per la GPU Apple per prestazioni migliori */
+            transform: translateZ(0); /* Attiva accelerazione hardware */
         }
         
-        /* 3. Contenitore con effetto vetro smerigliato (Blur Forte) */
+        /* 3. Effetto Vetro (Glassmorphism) con supporto Apple */
         .glass-box {
-            position: relative; /* Importante per z-index */
-            z-index: 2; /* Assicura che il box blur sia sopra il blur dello sfondo */
-            /* Sfondo semitrasparente */
+            position: relative;
+            z-index: 2;
             background-color: rgba(255, 255, 255, 0.5); 
-            /* Effetto sfocatura applicato solo al box per massima leggibilità */
+            
+            /* Supporto standard e WebKit (Safari/iOS) */
             backdrop-filter: blur(8px); 
             -webkit-backdrop-filter: blur(8px);
-            /* Bordo per l'effetto più pulito */
+            
             border: 1px solid rgba(255, 255, 255, 0.3);
-            /* Testo scuro all'interno per contrasto */
             color: #222; 
         }
 
-        /* Stili per i pulsanti */
+        /* Stili pulsanti */
         .btn-primary {
             background-color: var(--color-primary);
             color: white;
             transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
         }
 
         .btn-primary:hover {
-            background-color: #4A5B3E; /* Tonalità più scura del primario */
+            background-color: #4A5B3E;
             box-shadow: 0 4px 15px rgba(93, 112, 80, 0.5);
             transform: translateY(-2px);
         }
+        
+        .btn-primary:active {
+            transform: translateY(0); /* Feedback tattile immediato */
+        }
 
-        /* Stile per l'area di Drop del Caricamento Foto */
         .drop-area {
             border: 4px dashed var(--color-secondary);
             background-color: #ffffff;
             transition: all 0.2s;
         }
         
-        /* Aggiungo lo stile hover mancante */
         .drop-area.highlight {
             border-color: var(--color-primary);
             background-color: #f7f9f7;
@@ -103,15 +144,14 @@
 </head>
 <body class="scroll-smooth">
 
-    
-<header class="wedding-bg flex flex-col justify-center items-center p-8 text-center" id="home">
+    <!-- HEADER / HERO -->
+    <header class="wedding-bg flex flex-col justify-center items-center p-8 text-center" id="home">
         
-        <!-- Il max-w-lg w-full e i padding (p-8) assicurano un ottimo adattamento mobile -->
         <div class="glass-box p-8 md:p-12 max-w-lg w-full rounded-2xl shadow-2xl"> 
             
             <p class="text-xl text-gray-800 mb-2 header-font italic">Siete invitati al matrimonio di</p>
             
-            <!-- MODIFICA QUI: Nomi su una riga --><h1 class="header-font text-5xl md:text-7xl text-[var(--color-primary)] font-bold mb-6 tracking-tight leading-none flex justify-center items-center flex-wrap">
+            <h1 class="header-font text-5xl md:text-7xl text-[var(--color-primary)] font-bold mb-6 tracking-tight leading-none flex justify-center items-center flex-wrap">
                 <span>Elena</span> 
                 <span class="text-gray-600 font-normal mx-3 text-5xl md:text-7xl">&</span> 
                 <span>Ugo</span>
@@ -119,8 +159,8 @@
             
             <p class="text-2xl text-gray-800 font-medium mb-12">30 Maggio 2026</p>
 
-            
-            <!-- Conto alla rovescia --><div id="countdown" class="flex justify-center space-x-4 md:space-x-8 text-gray-800 bg-white p-4 rounded-lg shadow-xl">
+            <!-- Conto alla rovescia -->
+            <div id="countdown" class="flex justify-center space-x-4 md:space-x-8 text-gray-800 bg-white p-4 rounded-lg shadow-xl">
                 <div class="flex flex-col items-center">
                     <span id="days" class="text-3xl font-bold text-[var(--color-primary)]">00</span>
                     <span class="text-xs uppercase mt-1">Giorni</span>
@@ -143,31 +183,28 @@
         </div>
     </header>
 
-    
-<nav class="sticky top-0 z-50 bg-white shadow-lg border-t-4 border-[var(--color-primary)]">
+    <!-- NAVIGAZIONE STICKY (Ordine aggiornato: Info -> RSVP -> Foto) -->
+    <nav class="sticky top-0 z-50 bg-white/90 backdrop-blur-md shadow-lg border-t-4 border-[var(--color-primary)] supports-[backdrop-filter]:bg-white/60">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-center h-16">
-                
-                <a href="#info" class="text-gray-600 hover:text-[var(--color-primary)] px-5 py-2 rounded-md text-base font-medium transition duration-150">Info</a>
-                <a href="#upload-foto" class="text-gray-600 hover:text-[var(--color-primary)] px-5 py-2 rounded-md text-base font-medium transition duration-150">Foto</a>
-                <a href="#guestbook" class="text-gray-600 hover:text-[var(--color-primary)] px-5 py-2 rounded-md text-base font-medium transition duration-150">RSVP & Guestbook</a>
+                <a href="#info" class="text-gray-600 hover:text-[var(--color-primary)] px-5 py-2 rounded-md text-base font-medium transition duration-150 flex items-center h-full">Info</a>
+                <a href="#guestbook" class="text-gray-600 hover:text-[var(--color-primary)] px-5 py-2 rounded-md text-base font-medium transition duration-150 flex items-center h-full">RSVP</a>
+                <a href="#upload-foto" class="text-gray-600 hover:text-[var(--color-primary)] px-5 py-2 rounded-md text-base font-medium transition duration-150 flex items-center h-full">Foto</a>
             </div>
         </div>
     </nav>
 
-    
-<section id="info" class="py-16 md:py-24 bg-[var(--color-background)]">
+    <!-- SEZIONE INFO -->
+    <section id="info" class="py-16 md:py-24 bg-[var(--color-background)] relative z-10">
         <div class="max-w-5xl mx-auto px-4 text-center">
             <h2 class="header-font text-4xl md:text-5xl font-bold mb-12 text-gray-800 border-b-2 border-[var(--color-primary)] inline-block pb-2">Informazioni Utili</h2>
 
-            
             <div class="space-y-8">
-                
                 <!-- Riga 1: Cerimonia e Ricevimento -->
                 <div class="grid md:grid-cols-2 gap-8">
                     
                     <!-- Cerimonia Card -->
-                    <div class="bg-white p-8 rounded-xl shadow-lg border-t-4 border-[var(--color-secondary)]">
+                    <div class="bg-white p-8 rounded-xl shadow-lg border-t-4 border-[var(--color-secondary)] transform transition duration-300 hover:scale-[1.02]">
                         <i class="fas fa-handshake text-4xl text-[var(--color-primary)] mb-4"></i>
                         <h3 class="header-font text-3xl font-semibold mb-3">Cerimonia</h3>
                         <p class="text-gray-600 mb-2 font-medium">Ore 12:00</p>
@@ -180,7 +217,7 @@
                     </div>
     
                     <!-- Ricevimento Card -->
-                    <div class="bg-white p-8 rounded-xl shadow-lg border-t-4 border-[var(--color-primary)]">
+                    <div class="bg-white p-8 rounded-xl shadow-lg border-t-4 border-[var(--color-primary)] transform transition duration-300 hover:scale-[1.02]">
                         <i class="fas fa-glass-cheers text-4xl text-[var(--color-primary)] mb-4"></i>
                         <h3 class="header-font text-3xl font-semibold mb-3">Ricevimento</h3>
                         <p class="text-gray-600 mb-2 font-medium">A seguire (Ore 14:00)</p>
@@ -193,81 +230,31 @@
                     </div>
                 </div>
                 
-                <!-- Riga 2: Lista Nozze (Centrata in basso) -->
+                <!-- Riga 2: Un piccolo pensiero (EX Lista Nozze) -->
                 <div class="flex justify-center pt-4">
                     <div class="w-full md:w-2/3 lg:w-1/2">
-                        <!-- Lista Nozze Card -->
                         <div class="bg-white p-8 rounded-xl shadow-lg border-t-4 border-[var(--color-secondary)]">
                             <i class="fas fa-gift text-4xl text-[var(--color-primary)] mb-4"></i>
-                            <h3 class="header-font text-3xl font-semibold mb-3">Lista Nozze</h3>
+                            <h3 class="header-font text-3xl font-semibold mb-3">Un piccolo pensiero</h3>
                             <p class="text-gray-600 mb-6 text-sm">
                                 La vostra presenza è il regalo più grande! Ma se desiderate farci un pensiero, gradiremmo un contributo per la nostra luna di miele da sogno.
                             </p>
-                            <button onclick="document.getElementById('iban_details').classList.toggle('hidden')" class="btn-primary py-2 px-6 rounded-full font-bold shadow-md hover:shadow-xl transition duration-300 text-sm">
+                            <button onclick="document.getElementById('iban_details').classList.toggle('hidden')" class="btn-primary py-2 px-6 rounded-full font-bold shadow-md hover:shadow-xl transition duration-300 text-sm w-full sm:w-auto">
                                 Vedi Dettagli IBAN
                             </button>
-                            <div id="iban_details" class="mt-4 p-3 bg-gray-100 rounded-lg hidden text-left">
-                                <p class="text-sm font-mono break-all">IT00 A000 0000 0000 0000 0000 00</p>
-                                <p class="text-xs mt-1 text-gray-500">Intestato a: Contributo Viaggio</p>
+                            <div id="iban_details" class="mt-4 p-3 bg-gray-100 rounded-lg hidden text-left animate-fade-in-down">
+                                <p class="text-sm font-mono break-all text-center sm:text-left">IT00 A000 0000 0000 0000 0000 00</p>
+                                <p class="text-xs mt-1 text-gray-500 text-center sm:text-left">Intestato a: Contributo Viaggio</p>
                             </div>
                         </div>
                     </div>
                 </div>
-                
             </div>
-            
         </div>
     </section>
 
-    
-<section id="upload-foto" class="py-16 md:py-24 bg-white">
-        <div class="max-w-3xl mx-auto px-4 text-center">
-            <h2 class="header-font text-4xl md:text-5xl font-bold mb-12 text-gray-800 border-b-2 border-[var(--color-primary)] inline-block pb-2">Condividi le tue Foto!</h2>
-            <p class="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
-                Aiutaci a raccogliere i momenti più belli della giornata. Carica qui i tuoi scatti, li useremo per la galleria ufficiale di **Elena & Ugo**.
-            </p>
-
-            <form id="uploadForm" class="bg-[var(--color-background)] p-6 md:p-8 rounded-xl shadow-2xl space-y-4 text-left">
-                
-                
-                
-                <div class="drop-area flex flex-col items-center justify-center p-12 text-center rounded-lg cursor-pointer">
-                    <i class="fas fa-cloud-upload-alt text-4xl text-[var(--color-primary)] mb-4"></i>
-                    <p class="font-semibold text-gray-700">Trascina qui le foto o clicca per selezionarle</p>
-                    <p class="text-sm text-gray-500">JPG, PNG, GIF, MP4 sono i benvenuti. Max 50MB per file.</p>
-                    
-                    <input type="file" id="mediaFile" name="mediaFile" accept="image/*,video/*" class="hidden" multiple>
-                    <button type="button" onclick="document.getElementById('mediaFile').click()" class="btn-primary py-2 px-6 rounded-full font-bold mt-4 shadow-md">
-                        Scegli File
-                    </button>
-                </div>
-                
-                <div id="file-info" class="text-sm text-gray-600 text-center pt-2 hidden">Nessun file selezionato.</div>
-                
-                
-                <div>
-                    <label for="uploader-name" class="block text-sm font-medium text-gray-700">Il tuo Nome</label>
-                    <input type="text" id="uploader-name" placeholder="Es. Giuseppe Verdi" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-3 focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)]">
-                </div>
-
-                <button type="submit" id="uploadButton" class="btn-primary w-full py-3 mt-4 rounded-full font-bold text-lg" disabled>
-                    Carica File Selezionati
-                </button>
-
-                
-                <div id="statusMessage" class="mt-4 p-3 rounded-md hidden text-center"></div>
-
-                <div id="progress-bar-container" class="w-full h-3 rounded-full overflow-hidden mt-4 hidden">
-                    <div id="progress-bar" class="h-full" style="width: 0%; background-color: var(--color-primary);"></div>
-                </div>
-                <p id="progress-text" class="text-sm text-gray-600 mt-2 text-center hidden"></p>
-
-            </form>
-        </div>
-    </section>
-    
-    
-<section id="guestbook" class="py-16 md:py-24 bg-[var(--color-background)]">
+    <!-- SEZIONE RSVP / GUESTBOOK (Spostata prima delle Foto) -->
+    <section id="guestbook" class="py-16 md:py-24 bg-[var(--color-background)] relative z-10">
         <div class="max-w-5xl mx-auto px-4 text-center">
             <h2 class="header-font text-4xl md:text-5xl font-bold mb-12 text-gray-800 border-b-2 border-[var(--color-primary)] inline-block pb-2">Conferma Presenza (RSVP)</h2>
             <p class="text-lg text-gray-600 mb-8 max-w-3xl mx-auto">
@@ -275,23 +262,18 @@
             </p>
             
             <div class="bg-white p-6 md:p-10 rounded-xl shadow-2xl max-w-3xl mx-auto">
-                <h3 class="text-2xl font-bold text-[var(--color-primary)] mb-6">Dettagli Presenza e Intolleranze</h3>
-                
-                
+                <h3 class="text-2xl font-bold text-[var(--color-primary)] mb-6">Dettagli Presenza</h3>
                 
                 <div id="rsvp-content">
-                    
                     <form id="rsvp-form" class="space-y-4 text-left">
                         <div>
                             <label for="guest-name" class="block text-sm font-medium text-gray-700">Il tuo Nome (Contatto Principale)</label>
                             <input type="text" id="guest-name" required placeholder="Es. Mario Rossi e famiglia" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-3 focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)]">
                         </div>
                         
-                        
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label for="adult-count" class="block text-sm font-medium text-gray-700">Numero di Adulti (incluso te)</label>
-                                <!-- MODIFICA UX: Rimuove lo '0' su focus, lo ripristina su blur se vuoto -->
                                 <input type="number" id="adult-count" required min="0" value="0" 
                                     onfocus="if (this.value === '0') this.value = '';" 
                                     onblur="if (this.value === '') this.value = '0';"
@@ -299,7 +281,6 @@
                             </div>
                             <div>
                                 <label for="children-count" class="block text-sm font-medium text-gray-700">Numero di Bambini (<12 anni)</label>
-                                <!-- MODIFICA UX: Rimuove lo '0' su focus, lo ripristina su blur se vuoto -->
                                 <input type="number" id="children-count" required min="0" value="0" 
                                     onfocus="if (this.value === '0') this.value = '';" 
                                     onblur="if (this.value === '') this.value = '0';"
@@ -307,14 +288,12 @@
                             </div>
                         </div>
                         
-                        
                         <div id="individual-guests-container" class="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
                             <p class="text-sm font-medium text-gray-500 text-center">Inserisci il numero di adulti e bambini per specificare i dettagli individuali.</p>
                         </div>
 
-                        
                         <div>
-                            <label for="guest-message" class="block text-sm font-medium text-gray-700">Note Aggiuntive o RSVP Negativo (Opzionale)</label>
+                            <label for="guest-message" class="block text-sm font-medium text-gray-700">Note Aggiuntive o RSVP Negativo</label>
                             <textarea id="guest-message" rows="3" placeholder="Scrivi 'RSVP Negativo' se non puoi venire. Altrimenti, usa questo spazio per note extra (es. necessità di seggiolone)." class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-3 focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)]"></textarea>
                         </div>
 
@@ -324,20 +303,62 @@
                     </form>
 
                     <div id="status-message-guestbook" class="mt-4 p-3 rounded-md hidden"></div>
-                    
                 </div>
             </div>
         </div>
     </section>
 
+    <!-- SEZIONE UPLOAD FOTO (RIPRISTINATA CON UPLOAD DIRETTO) -->
+    <section id="upload-foto" class="py-16 md:py-24 bg-white relative z-10">
+        <div class="max-w-3xl mx-auto px-4 text-center">
+            <h2 class="header-font text-4xl md:text-5xl font-bold mb-12 text-gray-800 border-b-2 border-[var(--color-primary)] inline-block pb-2">Condividi le tue Foto!</h2>
+            <p class="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
+                Aiutaci a raccogliere i momenti più belli della giornata. Carica qui i tuoi scatti direttamente dal tuo smartphone.
+            </p>
+
+            <form id="uploadForm" class="bg-[var(--color-background)] p-6 md:p-8 rounded-xl shadow-2xl space-y-4 text-left">
+                
+                <div class="drop-area flex flex-col items-center justify-center p-8 md:p-12 text-center rounded-lg cursor-pointer active:bg-gray-100 transition border-4 border-dashed border-[var(--color-secondary)] hover:border-[var(--color-primary)] bg-white">
+                    <i class="fas fa-cloud-upload-alt text-4xl text-[var(--color-primary)] mb-4"></i>
+                    <p class="font-semibold text-gray-700">Tocca qui per selezionare le foto</p>
+                    <p class="text-sm text-gray-500">JPG, PNG. Max 5MB a file.</p>
+                    
+                    <input type="file" id="mediaFile" name="mediaFile" accept="image/*" class="hidden" multiple>
+                    <button type="button" onclick="document.getElementById('mediaFile').click()" class="btn-primary py-2 px-6 rounded-full font-bold mt-4 shadow-md text-sm">
+                        Scegli dalla Galleria
+                    </button>
+                </div>
+                
+                <div id="file-info" class="text-sm text-gray-600 text-center pt-2 hidden">Nessun file selezionato.</div>
+                
+                <div>
+                    <label for="uploader-name" class="block text-sm font-medium text-gray-700">Il tuo Nome (Facoltativo)</label>
+                    <input type="text" id="uploader-name" placeholder="Es. Giuseppe Verdi" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-3 focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)]">
+                </div>
+
+                <button type="submit" id="uploadButton" class="btn-primary w-full py-3 mt-4 rounded-full font-bold text-lg" disabled>
+                    Carica Foto
+                </button>
+
+                <div id="statusMessage" class="mt-4 p-3 rounded-md hidden text-center text-sm font-medium"></div>
+
+                <div id="progress-bar-container" class="w-full h-3 rounded-full overflow-hidden mt-4 hidden bg-gray-200">
+                    <div id="progress-bar" class="h-full transition-all duration-300" style="width: 0%; background-color: var(--color-primary);"></div>
+                </div>
+                <p id="progress-text" class="text-sm text-gray-600 mt-2 text-center hidden"></p>
+
+            </form>
+        </div>
+    </section>
     
-<footer class="bg-gray-800 text-white p-8 text-center relative">
+    <!-- FOOTER -->
+    <footer class="bg-gray-800 text-white p-8 text-center relative z-10">
         <p class="text-sm">&copy; 2024 Elena & Ugo. Non vediamo l'ora di festeggiare con voi!</p>
         <p class="text-xs mt-2 text-gray-400">Eternal Vows | Creato con ❤️.</p>
         
-        <!-- SEZIONE ADMIN (NUOVA) -->
+        <!-- SEZIONE ADMIN -->
         <div class="absolute right-4 bottom-4">
-            <button id="admin-trigger" class="text-gray-400 hover:text-[var(--color-accent)] transition duration-200 focus:outline-none">
+            <button id="admin-trigger" class="text-gray-400 hover:text-[var(--color-accent)] transition duration-200 focus:outline-none p-2">
                 <i class="fas fa-lock text-xl"></i>
             </button>
             <div id="admin-panel" class="absolute bottom-10 right-0 w-64 bg-white p-4 rounded-lg shadow-2xl text-gray-800 hidden text-left z-50">
@@ -345,7 +366,6 @@
                     <i class="fas fa-user-shield mr-2"></i> Area Admin
                 </h4>
                 <div id="admin-login-area">
-                    <!-- Rimosso il PIN visibile -->
                     <label for="admin-pin" class="block text-sm font-medium mb-1">Inserisci PIN</label>
                     <input type="password" id="admin-pin" placeholder="****" class="w-full rounded-md border-gray-300 shadow-sm p-2 text-sm focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)]">
                     <button id="pin-submit" class="btn-primary w-full py-2 mt-3 rounded-lg font-semibold text-sm">
@@ -355,7 +375,6 @@
                 </div>
                 <div id="admin-download-area" class="hidden">
                     <p class="text-sm font-medium mb-3 text-green-600">Accesso Admin Riuscito!</p>
-                    <!-- Questo pulsante chiamerà la funzione di download (ora spostata) -->
                     <button id="download-rsvp" class="bg-[var(--color-accent)] text-gray-800 hover:bg-[#D4A33B] w-full py-2 rounded-lg font-bold text-sm transition duration-300 shadow-md">
                         <i class="fas fa-file-excel mr-2"></i> Scarica Dati RSVP
                     </button>
@@ -363,26 +382,26 @@
                 </div>
             </div>
         </div>
-        <!-- FINE SEZIONE ADMIN -->
     </footer>
     
     <script type="module">
-        // --- CONFIGURAZIONE ENDPOINT QNAP: SOLO PER L'UPLOAD FOTO ---
-        const QNAP_UPLOAD_URL = 'http:///upload_photo.php'; 
+        // --- CONFIGURAZIONE GOOGLE APPS SCRIPT ---
+        // INSERISCI QUI SOTTO L'URL DELLA TUA WEB APP DEPLOYATA 
+        // Se lasciato vuoto, il sito mostrerà una simulazione di successo.
+        const GOOGLE_SCRIPT_URL = ''; 
         
         // --- CONFIGURAZIONE STANDALONE ---
         const appId = 'wedding-app-default';
         let userId = 'AnonGuest_' + crypto.randomUUID(); 
+        let mockRsvpDataStore = [];
         
         // --- VARIABILI CONTO ALLA ROVESCIA (Countdown) ---
         const targetDate = new Date("May 30, 2026 12:00:00").getTime(); 
-
         const daysSpan = document.getElementById('days');
         const hoursSpan = document.getElementById('hours');
         const minutesSpan = document.getElementById('minutes');
         const secondsSpan = document.getElementById('seconds');
         const countdownMessage = document.getElementById('countdown-message');
-
 
         // Elementi DOM per il form RSVP
         const rsvpForm = document.getElementById('rsvp-form');
@@ -392,18 +411,8 @@
         const guestsContainer = document.getElementById('individual-guests-container');
         const messageInput = document.getElementById('guest-message');
         const submitRsvpButton = document.getElementById('submitRsvp');
-        // NOTA: downloadStatus è ora nell'area admin
-        
-        // Variabile per simulare l'archiviazione dei dati RSVP
-        // In una vera applicazione, useremmo Firestore o un DB server-side
-        let mockRsvpDataStore = [];
-
 
         // --- FUNZIONI DI UTILITÀ ---
-        
-        /**
-         * Mostra un messaggio di stato sul guestbook.
-         */
         function alertUserGuestbook(message, type) {
             const statusDiv = document.getElementById('status-message-guestbook');
             statusDiv.textContent = message;
@@ -416,21 +425,11 @@
             } else if (type === 'info') {
                  statusDiv.classList.add('bg-blue-100', 'text-blue-700');
             }
-
             statusDiv.classList.remove('hidden');
         }
-        
 
         // --- LOGICA GENERAZIONE CAMPI DINAMICI ---
-
-        /**
-         * Genera i campi individuali per nome e intolleranze.
-         */
         function updateIndividualGuestFields() {
-            // Aggiorna il valore interno se l'utente ha lasciato il campo vuoto dopo onblur
-            // Questo è necessario perché onblur aggiorna solo la UI, ma il listener
-            // `change` potrebbe non essersi ancora attivato se l'utente è arrivato qui via 'input' sul nome.
-            // La gestione onfocus/onblur nell'HTML risolve la parte UX della rimozione dello '0'.
             const adultCount = parseInt(adultCountInput.value, 10) || 0;
             const childrenCount = parseInt(childrenCountInput.value, 10) || 0;
             const totalGuests = adultCount + childrenCount;
@@ -444,12 +443,10 @@
                 return;
             }
             
-            // Titolo della sezione dinamica
             const title = document.createElement('h4');
             title.className = 'text-lg font-semibold text-gray-700 mb-4 border-b pb-2';
             title.textContent = `Dettagli per ${totalGuests} Persona/e (Nome e Intolleranze)`;
             guestsContainer.appendChild(title);
-
 
             for (let i = 0; i < totalGuests; i++) {
                 const isChild = i >= adultCount;
@@ -458,7 +455,6 @@
                 
                 let defaultName = '';
                 if (i === 0 && !isChild) {
-                    // Pre-compila il primo adulto con il nome del contatto principale
                     defaultName = guestNameInput.value.split(' ')[0] || '';
                 }
 
@@ -468,14 +464,12 @@
                     <p class="text-sm font-bold text-[var(--color-primary)]">${guestType} #${guestNumber}</p>
                     <input type="hidden" name="guest-type" value="${guestType}" />
                     <input type="hidden" name="guest-age" value="${isChild ? '<12' : '>12'}" />
-
                     <div>
                         <label class="block text-xs font-medium text-gray-700">Nome Completo (Necessario per il Tableau)</label>
                         <input type="text" name="guest-name-field" value="${defaultName}" required 
                                placeholder="Nome e Cognome"
                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 text-sm focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)]">
                     </div>
-                    
                     <div>
                         <label class="block text-xs font-medium text-gray-700">Allergie / Intolleranze / Restrizioni (Es. Vegetariano)</label>
                         <input type="text" name="guest-allergies" placeholder="Nessuna"
@@ -486,11 +480,7 @@
             }
         }
         
-        // --- LOGICA DI GENERAZIONE E DOWNLOAD CSV/EXCEL (SPOSTATA PER L'ADMIN) ---
-        
-        /**
-         * Converte l'intero mockRsvpDataStore in formato CSV e avvia il download.
-         */
+        // --- LOGICA DI DOWNLOAD CSV (ADMIN) ---
         function downloadAllRsvpData() {
             const downloadStatus = document.getElementById('download-status');
             
@@ -501,39 +491,22 @@
                  return;
             }
             
-            console.log(`📄 Generazione file CSV (Excel) per ${mockRsvpDataStore.length} record in corso...`);
-            
             downloadStatus.classList.remove('hidden', 'text-red-700', 'text-green-700');
             downloadStatus.textContent = "Preparazione e download del file CSV in corso...";
             downloadStatus.classList.add('text-blue-700');
 
-            const headers = [
-                "Nome Contatto Principale", 
-                "Totale Adulti", 
-                "Totale Bambini", 
-                "Totale Ospiti",
-                "RSVP Negativo", 
-                "Messaggio/Note", 
-                "Nome Ospite Individuale",
-                "Età Ospite (<12/>12)", 
-                "Allergie/Intolleranze", 
-                "Data Invio"
-            ];
-
+            const headers = ["Nome Contatto Principale", "Totale Adulti", "Totale Bambini", "Totale Ospiti", "RSVP Negativo", "Messaggio/Note", "Nome Ospite Individuale", "Età Ospite (<12/>12)", "Allergie/Intolleranze", "Data Invio"];
             let csvContent = headers.join(";") + "\n";
             
-            // Funzione per escapare i valori in CSV (uso il punto e virgola come separatore per Excel)
             const escapeValue = (value) => {
                 if (value === null || value === undefined) return "";
                 let str = String(value).replace(/"/g, '""');
-                // Se il valore contiene il separatore (;) o un newline, lo racchiudo tra virgolette
                 if (str.includes(';') || str.includes('\n') || str.includes(',')) {
                     str = `"${str}"`;
                 }
                 return str;
             };
 
-            // Itera su tutti i record RSVP
             mockRsvpDataStore.forEach(rsvpData => {
                 const mainContact = escapeValue(rsvpData.contactName);
                 const totalAdults = rsvpData.adults;
@@ -544,37 +517,15 @@
                 const timestamp = rsvpData.timestamp;
 
                 if (rsvpData.isRsvpNegative) {
-                    // Riga singola per RSVP Negativo
-                    const row = [
-                        mainContact, 
-                        totalAdults, 
-                        totalChildren, 
-                        totalGuests,
-                        isNegative,
-                        message,
-                        "", // Nome Ospite Individuale
-                        "", // Età Ospite
-                        "", // Allergie/Intolleranze
-                        timestamp
-                    ];
+                    const row = [mainContact, totalAdults, totalChildren, totalGuests, isNegative, message, "", "", "", timestamp];
                     csvContent += row.map(escapeValue).join(";") + "\n";
                 } else {
-                    // Molteplici righe, una per ospite
                     rsvpData.guests.forEach((guest, index) => {
-                        // Solo la prima riga contiene i dati del contatto principale per evitare duplicati enormi
                         const contactInfo = index === 0 ? [mainContact, totalAdults, totalChildren, totalGuests, isNegative, message] : ["", "", "", "", "", ""];
-                        
-                        const guestRow = [
-                            escapeValue(guest.name),
-                            escapeValue(guest.age),
-                            escapeValue(guest.allergies)
-                        ];
-                        
-                        // Concatena le informazioni di contatto, quelle dell'ospite e il timestamp
+                        const guestRow = [escapeValue(guest.name), escapeValue(guest.age), escapeValue(guest.allergies)];
                         const row = [...contactInfo, ...guestRow, timestamp];
                         csvContent += row.map(escapeValue).join(";") + "\n";
                     });
-                    // Gestione del caso in cui i conteggi sono > 0 ma l'utente non ha riempito i dettagli individuali
                     if (rsvpData.guests.length === 0 && totalGuests > 0) {
                         const row = [mainContact, totalAdults, totalChildren, totalGuests, isNegative, message, "N/A - Dettagli Mancanti", "", "", timestamp];
                         csvContent += row.map(escapeValue).join(";") + "\n";
@@ -582,12 +533,8 @@
                 }
             });
             
-            // Crea un Blob (file virtuale) con il contenuto CSV
-            // Aggiungo il Byte Order Mark (BOM) per garantire che Excel interpreti correttamente UTF-8
             const bom = '\ufeff'; 
             const blob = new Blob([bom + csvContent], { type: 'text/csv;charset=utf-8;' });
-            
-            // Crea un link invisibile per il download
             const link = document.createElement('a');
             if (link.download !== undefined) { 
                 const url = URL.createObjectURL(blob);
@@ -597,25 +544,15 @@
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
-                
                 downloadStatus.textContent = `✅ File CSV (Excel) generato e scaricato.`;
                 downloadStatus.classList.remove('text-blue-700');
                 downloadStatus.classList.add('text-green-700');
-
-            } else {
-                downloadStatus.textContent = `❌ Errore Download: Il browser non supporta il download automatico.`;
-                downloadStatus.classList.remove('text-blue-700');
-                downloadStatus.classList.add('text-red-700');
-                console.error("Il browser non supporta il download automatico tramite Blob.");
             }
         }
 
-
-        // --- LOGICA DI INVIO FORM (MOCK SALVATAGGIO DATI) ---
-
+        // --- LOGICA DI INVIO FORM (MOCK) ---
         rsvpForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
             submitRsvpButton.disabled = true;
             submitRsvpButton.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Invio...';
             alertUserGuestbook('Raccolta e invio della conferma in corso...', 'info');
@@ -625,93 +562,46 @@
                 const adultCount = parseInt(adultCountInput.value, 10) || 0;
                 const childrenCount = parseInt(childrenCountInput.value, 10) || 0;
                 const guestMessage = messageInput.value.trim();
-                
                 const totalGuests = adultCount + childrenCount;
                 let isRsvpNegative = false;
 
                 if (totalGuests === 0 && guestMessage.toLowerCase().includes('negativo')) {
                     isRsvpNegative = true;
                 } else if (totalGuests === 0 && !guestMessage) {
-                    alertUserGuestbook('Per favore, inserisci il numero di partecipanti o indica l\'RSVP negativo nelle note.', 'error');
-                    // Riabilita e ripristina il pulsante in caso di errore
-                    submitRsvpButton.disabled = false;
-                    submitRsvpButton.innerHTML = '<i class="fas fa-paper-plane mr-2"></i> Invia Conferma Presenza'; 
-                    return;
+                    throw new Error("Per favore, inserisci i partecipanti o 'RSVP Negativo'.");
                 }
 
-
-                // Raccogli i dettagli degli ospiti individuali
                 const individualGuestsData = [];
                 if (!isRsvpNegative) {
                     const guestFields = guestsContainer.querySelectorAll('.space-y-2');
-                    let validGuests = true;
-                    
                     guestFields.forEach(group => {
                         const nameInput = group.querySelector('input[name="guest-name-field"]');
-                        const allergiesInput = group.querySelector('input[name="guest-allergies"]');
-                        const typeInput = group.querySelector('input[name="guest-type"]');
-                        const ageInput = group.querySelector('input[name="guest-age"]');
-
-                        if (!nameInput.value.trim()) {
-                            nameInput.focus();
-                            validGuests = false;
-                        }
-
+                        if (!nameInput.value.trim()) throw new Error("Inserisci il nome per tutti gli ospiti.");
                         individualGuestsData.push({
-                            type: typeInput.value,
-                            age: ageInput.value,
+                            type: group.querySelector('input[name="guest-type"]').value,
+                            age: group.querySelector('input[name="guest-age"]').value,
                             name: nameInput.value.trim(),
-                            allergies: allergiesInput.value.trim() || 'Nessuna',
+                            allergies: group.querySelector('input[name="guest-allergies"]').value.trim() || 'Nessuna',
                         });
                     });
-                    
-                    if (!validGuests) {
-                        alertUserGuestbook('Per favorè, inserisci il nome completo per tutti gli ospiti.', 'error');
-                        // Riabilita e ripristina il pulsante in caso di errore
-                        submitRsvpButton.disabled = false;
-                        submitRsvpButton.innerHTML = '<i class="fas fa-paper-plane mr-2"></i> Invia Conferma Presenza'; 
-                        return;
-                    }
                 }
 
-                // Costruisci l'oggetto dati
                 const rsvpData = {
-                    contactUserId: userId, 
-                    contactName: contactName,
-                    adults: adultCount,
-                    children: childrenCount,
-                    totalGuests: totalGuests,
-                    message: guestMessage,
-                    isRsvpNegative: isRsvpNegative,
-                    guests: individualGuestsData,
+                    contactUserId: userId, contactName, adults: adultCount, children: childrenCount,
+                    totalGuests, message: guestMessage, isRsvpNegative, guests: individualGuestsData,
                     timestamp: new Date().toISOString(),
                 };
                 
-                // *** 1. SIMULAZIONE SALVATAGGIO DATI (MOCK) ***
-                // In un'applicazione reale, qui ci sarebbe una chiamata API (p.es. Firestore)
-                mockRsvpDataStore.push(rsvpData); // Aggiungi al mock store
-                console.log("Dato RSVP salvato (Mock):", rsvpData);
-                await new Promise(r => setTimeout(r, 1000)); // Simula il tempo di salvataggio
+                mockRsvpDataStore.push(rsvpData);
+                await new Promise(r => setTimeout(r, 1000));
 
-                // *** 2. Finalizza UI dopo l'operazione ***
                 alertUserGuestbook('✅ Conferma inviata con successo. Grazie!', 'success');
-                
-                // Aggiorna il messaggio finale di successo nel container principale del form
-                guestsContainer.innerHTML = `
-                    <p class="text-lg font-bold text-green-700 text-center">Grazie! La tua conferma di presenza è stata inviata.</p>
-                `;
-                    
-                // Resetta lo stato del pulsante 
+                guestsContainer.innerHTML = `<p class="text-lg font-bold text-green-700 text-center">Grazie! La tua conferma di presenza è stata inviata.</p>`;
                 submitRsvpButton.innerHTML = '<i class="fas fa-check mr-2"></i> Inviato!';
                 submitRsvpButton.disabled = true;
 
             } catch (error) {
-                // ❌ GESTIONE DEGLI ERRORI 
-                console.error("❌ ERRORE CRITICO DURANTE L'ELABORAZIONE RSVP:", error);
-                
-                let errorMessage = `❌ Errore: Impossibile inviare la conferma. Tipo: ${error.message}. Dettagli in console.`;
-                
-                alertUserGuestbook(errorMessage, 'error');
+                alertUserGuestbook(error.message, 'error');
                 submitRsvpButton.disabled = false;
                 submitRsvpButton.innerHTML = '<i class="fas fa-paper-plane mr-2"></i> Riprova Invio';
             }
@@ -723,111 +613,56 @@
         const adminPinInput = document.getElementById('admin-pin');
         const pinSubmitButton = document.getElementById('pin-submit');
         const adminStatus = document.getElementById('admin-status');
-        const adminLoginArea = document.getElementById('admin-login-area');
-        const adminDownloadArea = document.getElementById('admin-download-area');
         const downloadRsvpButton = document.getElementById('download-rsvp');
         
-        // PIN: Rimosso dalla UI, ma lasciato nel codice per il funzionamento
         const CORRECT_PIN = "2026"; 
         
-        // 1. Toggle pannello admin
         adminTrigger.addEventListener('click', () => {
             adminPanel.classList.toggle('hidden');
-            if (!adminPanel.classList.contains('hidden')) {
-                adminPinInput.focus();
-            }
+            if (!adminPanel.classList.contains('hidden')) adminPinInput.focus();
         });
         
-        // 2. Submit PIN
         pinSubmitButton.addEventListener('click', () => {
-            handlePinSubmit();
-        });
-        
-        adminPinInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                handlePinSubmit();
-            }
-        });
-
-        function handlePinSubmit() {
-            const pin = adminPinInput.value;
-            adminStatus.classList.add('hidden');
-            
-            if (pin === CORRECT_PIN) {
-                // Accesso Riuscito
-                adminLoginArea.classList.add('hidden');
-                adminDownloadArea.classList.remove('hidden');
-                adminTrigger.innerHTML = '<i class="fas fa-unlock text-xl text-[var(--color-accent)]"></i>'; // Icona sbloccata
+            if (adminPinInput.value === CORRECT_PIN) {
+                document.getElementById('admin-login-area').classList.add('hidden');
+                document.getElementById('admin-download-area').classList.remove('hidden');
+                adminTrigger.innerHTML = '<i class="fas fa-unlock text-xl text-[var(--color-accent)]"></i>';
             } else {
-                // Accesso Fallito
                 adminStatus.textContent = 'PIN errato. Riprova.';
                 adminStatus.classList.remove('hidden');
-                adminPinInput.value = '';
-                adminPinInput.focus();
-                adminTrigger.innerHTML = '<i class="fas fa-lock text-xl text-red-500"></i>'; // Icona bloccata (errore)
             }
-        }
-        
-        // 3. Download dati RSVP (solo per l'Admin)
-        downloadRsvpButton.addEventListener('click', () => {
-            downloadAllRsvpData();
         });
-
-
-        // --- FUNZIONI CONTO ALLA ROVESCIA (Countdown) ---
         
+        downloadRsvpButton.addEventListener('click', downloadAllRsvpData);
+
+        // --- COUNTDOWN ---
         function updateCountdown() {
             const now = new Date().getTime();
             const distance = targetDate - now;
 
             if (distance < 0) {
                 clearInterval(countdownInterval);
-                daysSpan.textContent = "00";
-                hoursSpan.textContent = "00";
-                minutesSpan.textContent = "00";
-                secondsSpan.textContent = "00";
-                countdownMessage.classList.remove('hidden');
                 document.getElementById('countdown').classList.add('hidden');
+                countdownMessage.classList.remove('hidden');
                 return;
             }
-
-            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-            daysSpan.textContent = days.toString().padStart(2, '0');
-            hoursSpan.textContent = hours.toString().padStart(2, '0');
-            minutesSpan.textContent = minutes.toString().padStart(2, '0');
-            secondsSpan.textContent = seconds.toString().padStart(2, '0');
+            daysSpan.textContent = Math.floor(distance / (1000 * 60 * 60 * 24)).toString().padStart(2, '0');
+            hoursSpan.textContent = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toString().padStart(2, '0');
+            minutesSpan.textContent = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
+            secondsSpan.textContent = Math.floor((distance % (1000 * 60)) / 1000).toString().padStart(2, '0');
         }
+        let countdownInterval = setInterval(updateCountdown, 1000);
+        updateCountdown();
 
-        let countdownInterval;
-
-        function startCountdown() {
-            // Avvia la logica e l'intervallo
-            updateCountdown();
-            // L'intervallo aggiorna ogni secondo
-            countdownInterval = setInterval(updateCountdown, 1000);
-            console.log("Countdown avviato con successo.");
-        }
-        
         // --- AVVIO APP ---
-        
         document.addEventListener('DOMContentLoaded', () => {
-            // Avvia il conto alla rovescia
-            startCountdown(); 
-            // Configura i listener di input
             adultCountInput.addEventListener('change', updateIndividualGuestFields);
             childrenCountInput.addEventListener('change', updateIndividualGuestFields);
             guestNameInput.addEventListener('input', updateIndividualGuestFields); 
             updateIndividualGuestFields(); 
         });
 
-
-        // --- FUNZIONI UPLOAD FOTO (LOGICA QNAP REALE) ---
-        
-        // Elementi DOM per l'upload
+        // --- NUOVA LOGICA UPLOAD FOTO (GOOGLE DRIVE COMPATIBILE) ---
         const mediaFileInput = document.getElementById('mediaFile');
         const fileInfoDiv = document.getElementById('file-info');
         const uploadButton = document.getElementById('uploadButton');
@@ -838,37 +673,19 @@
         const progressText = document.getElementById('progress-text');
         const uploaderNameInput = document.getElementById('uploader-name');
 
-        
-        // Gestione drag & drop
-        dropArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropArea.classList.add('highlight');
-        });
-        
-        dropArea.addEventListener('dragleave', (e) => {
-            e.preventDefault();
-            dropArea.classList.remove('highlight');
-        });
-
+        dropArea.addEventListener('click', () => mediaFileInput.click());
+        dropArea.addEventListener('dragover', (e) => { e.preventDefault(); dropArea.classList.add('highlight'); });
+        dropArea.addEventListener('dragleave', (e) => { e.preventDefault(); dropArea.classList.remove('highlight'); });
         dropArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropArea.classList.remove('highlight');
+            e.preventDefault(); dropArea.classList.remove('highlight');
             mediaFileInput.files = e.dataTransfer.files;
             handleFileSelect();
-        });
-        
-        // Gestione selezione file tramite input
-        dropArea.addEventListener('click', () => {
-            // Cliccando sull'area intera, si attiva l'input file (anche se c'è un pulsante esplicito)
-            mediaFileInput.click();
         });
         
         mediaFileInput.addEventListener('change', handleFileSelect);
 
         function handleFileSelect() {
             const files = mediaFileInput.files;
-            
-            // Nascondi gli stati precedenti
             statusMessageDiv.classList.add('hidden');
             progressBarContainer.classList.add('hidden');
             progressText.classList.add('hidden');
@@ -878,99 +695,112 @@
                 uploadButton.disabled = true;
                 return;
             }
+            // Controllo dimensioni (max 5MB per file per sicurezza browser)
+            let totalSizeMB = 0;
+            let validFiles = true;
+            Array.from(files).forEach(file => {
+                 const sizeMB = file.size / (1024 * 1024);
+                 totalSizeMB += sizeMB;
+                 if (sizeMB > 5) { // Limite prudenziale per upload base64
+                     validFiles = false;
+                 }
+            });
 
-            const totalSize = Array.from(files).reduce((sum, file) => sum + file.size, 0);
-            const totalSizeMB = (totalSize / (1024 * 1024)).toFixed(2);
-            
-            fileInfoDiv.textContent = `${files.length} file selezionati (${totalSizeMB} MB)`;
+            if (!validFiles) {
+                fileInfoDiv.textContent = `⚠️ Alcuni file sono troppo grandi (Max 5MB a foto).`;
+                fileInfoDiv.classList.remove('hidden', 'text-gray-600');
+                fileInfoDiv.classList.add('text-red-600');
+                uploadButton.disabled = true;
+                return;
+            }
+
+            fileInfoDiv.classList.remove('text-red-600');
+            fileInfoDiv.classList.add('text-gray-600');
+            fileInfoDiv.textContent = `${files.length} file selezionati (${totalSizeMB.toFixed(2)} MB)`;
             fileInfoDiv.classList.remove('hidden');
             uploadButton.disabled = false;
         }
 
-        // 🛑 Logica: Gestione invio reale tramite Fetch
+        // Funzione per convertire file in Base64 (Necessario per Apps Script)
+        const toBase64 = file => new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result.split(',')[1]); // Rimuove header data:image/png;base64,
+            reader.onerror = error => reject(error);
+        });
+
         document.getElementById('uploadForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
             const files = mediaFileInput.files;
             if (files.length === 0) return;
 
             uploadButton.disabled = true;
             uploadButton.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Preparazione...';
-            
-            statusMessageDiv.classList.remove('hidden');
-            statusMessageDiv.classList.remove('bg-red-100', 'text-red-700', 'bg-blue-100');
-            statusMessageDiv.classList.add('bg-green-100', 'text-green-700');
-            statusMessageDiv.textContent = `Avvio caricamento di ${files.length} file verso QNAP...`;
+            statusMessageDiv.classList.remove('hidden', 'bg-red-100', 'text-red-700', 'bg-blue-100', 'text-blue-700');
+            statusMessageDiv.classList.add('bg-blue-100', 'text-blue-700');
+            statusMessageDiv.textContent = `Avvio caricamento di ${files.length} file...`;
             
             progressBarContainer.classList.remove('hidden');
             progressBar.style.width = '0%';
             progressText.classList.remove('hidden');
-            progressText.textContent = '0% completato';
-            
-            const uploaderName = uploaderNameInput.value.trim() || 'Ospite Sconosciuto';
-            const formData = new FormData();
-            formData.append('uploader_name', uploaderName); // Invia il nome dell'utente
-            formData.append('user_id', userId || 'anon_upload'); // Invia l'ID utente simulato
 
-            // Aggiunge tutti i file selezionati al FormData
-            for (let i = 0; i < files.length; i++) {
-                formData.append('media_files[]', files[i]);
-            }
-            
-            // --- Inizio Tentativo di Fetch ---
-            try {
-                // Simula un avanzamento rapido al 50% per indicare che la richiesta è in corso
-                progressBar.style.width = '50%';
-                progressText.textContent = '50% completato (Invio dati al server...)';
-                uploadButton.innerHTML = '<i class="fas fa-upload mr-2"></i> Caricamento in corso...';
-                
-                // Inserisco un ritardo simulato per rendere visibile lo stato di caricamento
-                await new Promise(r => setTimeout(r, 2000)); 
-
-
-                const response = await fetch(QNAP_UPLOAD_URL, {
-                    method: 'POST',
-                    body: formData,
-                });
-
-                // Simula l'avanzamento al 100% dopo la risposta del server
+            // MOCK: Se non c'è URL, simula il successo dopo 2 secondi
+            if (!GOOGLE_SCRIPT_URL) {
+                await new Promise(r => setTimeout(r, 2000));
                 progressBar.style.width = '100%';
-                progressText.textContent = '100% completato (Attendo conferma QNAP...)';
+                statusMessageDiv.classList.remove('bg-blue-100', 'text-blue-700');
+                statusMessageDiv.classList.add('bg-green-100', 'text-green-700');
+                statusMessageDiv.innerHTML = `✅ Simulazione Completata!<br><span class='text-xs'>Per attivare l'upload reale, configura Google Apps Script come indicato.</span>`;
+                uploadButton.innerHTML = 'Fatto';
+                return;
+            }
 
-                // Simula la ricezione di una risposta JSON dal server QNAP
-                const result = { success: true, message: "Tutti i file sono stati caricati correttamente sul tuo QNAP." };
-                // const result = await response.json(); // In un'app reale
+            // UPLOAD REALE (uno alla volta per non sovraccaricare Apps Script)
+            try {
+                let successCount = 0;
+                const uploaderName = uploaderNameInput.value.trim() || 'Ospite Anonimo';
 
-                if (true) { // response.ok && result.success in un'app reale
-                    // Successo!
-                    statusMessageDiv.classList.remove('bg-green-100', 'text-green-700', 'bg-red-100', 'text-red-700');
-                    statusMessageDiv.classList.add('bg-blue-100', 'text-blue-700');
-                    statusMessageDiv.innerHTML = `✅ Caricamento completato. ${result.message}`;
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    const fileData = await toBase64(file);
                     
-                    mediaFileInput.value = ''; // Resetta l'input
-                    uploaderNameInput.value = '';
-                    handleFileSelect(); 
+                    uploadButton.innerHTML = `<i class="fas fa-upload mr-2"></i> Carico ${i+1}/${files.length}...`;
+                    
+                    const payload = {
+                        fileName: file.name,
+                        mimeType: file.type,
+                        fileData: fileData,
+                        uploaderName: uploaderName
+                    };
 
-                } else {
-                    // Errore lato QNAP (es. errore di PHP o permessi)
-                    throw new Error(result.message || `Errore QNAP: Stato 500`); //response.status in un'app reale
+                    await fetch(GOOGLE_SCRIPT_URL, {
+                        method: 'POST',
+                        mode: 'no-cors', // Importante per Apps Script
+                        body: JSON.stringify(payload)
+                    });
+
+                    successCount++;
+                    const percent = Math.round((successCount / files.length) * 100);
+                    progressBar.style.width = `${percent}%`;
+                    progressText.textContent = `${percent}% Completato`;
                 }
+
+                statusMessageDiv.classList.remove('bg-blue-100', 'text-blue-700');
+                statusMessageDiv.classList.add('bg-green-100', 'text-green-700');
+                statusMessageDiv.innerHTML = `✅ Tutte le foto sono state caricate! Grazie.`;
+                mediaFileInput.value = ''; 
+                uploaderNameInput.value = '';
+                uploadButton.innerHTML = 'Caricamento Completato';
+
             } catch (error) {
-                // Errore di rete o server-side
-                console.error("Errore di caricamento QNAP:", error);
-                
+                console.error("Errore di caricamento:", error);
                 uploadButton.disabled = false;
-                uploadButton.innerHTML = '<i class="fas fa-times-circle mr-2"></i> Errore caricamento';
-                
+                uploadButton.innerHTML = '<i class="fas fa-times-circle mr-2"></i> Riprova';
                 statusMessageDiv.classList.remove('bg-green-100', 'text-green-700', 'bg-blue-100', 'text-blue-700');
                 statusMessageDiv.classList.add('bg-red-100', 'text-red-700');
-                statusMessageDiv.textContent = `❌ Caricamento fallito. Errore: ${error.message}. Controlla la console.`;
-                
-                progressBarContainer.classList.add('hidden');
-                progressText.classList.add('hidden');
+                statusMessageDiv.textContent = `❌ Errore durante l'upload. Riprova con file più piccoli.`;
             }
         });
-        
     </script>
 </body>
 </html>
